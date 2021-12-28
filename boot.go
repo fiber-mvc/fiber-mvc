@@ -12,6 +12,7 @@ import (
 )
 
 type setupViewEngine func(e interface{})
+type setup func(app *fiber.App)
 
 type Config struct {
 	Database        database.DBConfig
@@ -19,8 +20,10 @@ type Config struct {
 	Services        map[string]interface{}
 	Routers         []routing.Router
 	Controllers     map[string]interface{}
-	SetupViewEngine setupViewEngine
 	Debug           bool
+	PreSetup        setup
+	Setup           setup
+	SetupViewEngine setupViewEngine
 }
 
 var AppConfig Config
@@ -76,7 +79,15 @@ func Boot(c Config) {
 
 	app := fiber.New(AppConfig.Fiber)
 
+	if AppConfig.PreSetup != nil {
+		AppConfig.PreSetup(app)
+	}
+
 	setupIOC()
+
+	if AppConfig.Setup != nil {
+		AppConfig.Setup(app)
+	}
 
 	for _, service := range AppConfig.Services {
 		service.(_setup).Setup(app)
