@@ -85,10 +85,6 @@ func Boot(c Config) {
 
 	setupIOC()
 
-	if AppConfig.Setup != nil {
-		AppConfig.Setup(app)
-	}
-
 	for _, service := range AppConfig.Services {
 		service.(_setup).Setup(app)
 	}
@@ -98,6 +94,8 @@ func Boot(c Config) {
 	for _, router := range AppConfig.Routers {
 		router.Setup(app)
 	}
-
+	if AppConfig.Setup != nil {
+		AppConfig.Setup(app)
+	}
 	log.Fatalln(app.Listen(":3000"))
 }
